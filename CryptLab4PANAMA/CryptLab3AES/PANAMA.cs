@@ -60,7 +60,7 @@ namespace CryptLab4PANAMA
             int[] r = new int[17];
             for (int i = 0; i < 17; i++)
             {
-                r[i] = state[i] ^ state[(i + 1) % 17] | ~(state[(i + 2) % 17]);
+                r[i] = state[i] ^ (state[(i + 1) % 17] | ~state[(i + 2) % 17]);
             }
 
             //дисперсия
@@ -81,7 +81,7 @@ namespace CryptLab4PANAMA
             state[0] = t[0] ^ 0x00000001;
             for (int i = 0; i < 7; i++)
             {
-                state[(i + 9) % 17] = t[(i + 9) % 17] ^ buffer[16, i];
+                state[(i + 9) % 17] = t[(i + 1) % 17] ^ buffer[16, i];
                 state[(i + 1) % 17] = t[(i + 1) % 17] ^ input[i];
             }
 
@@ -126,7 +126,7 @@ namespace CryptLab4PANAMA
             int[] r = new int[17];
             for (int i = 0; i < 17; i++)
             {
-                r[i] = state[i] ^ state[(i + 1) % 17] | ~(state[(i + 2) % 17]);
+                r[i] = state[i] ^ (state[(i + 1) % 17] | ~state[(i + 2) % 17]);
             }
 
             //дисперсия
@@ -147,7 +147,7 @@ namespace CryptLab4PANAMA
             state[0] = t[0] ^ 0x00000001;
             for (int i = 0; i < 7; i++)
             {
-                state[(i + 9) % 17] = t[(i + 9) % 17] ^ buffer[16, i];
+                state[(i + 9) % 17] = t[(i + 1) % 17] ^ buffer[16, i];
                 state[(i + 1) % 17] = t[(i + 1) % 17] ^ buffer[4, i];
             }
 
@@ -182,15 +182,9 @@ namespace CryptLab4PANAMA
 
             //ввод ключа
             Push(key.Take(8).ToArray());
-            Push(key.Skip(8).Take(8).ToArray());
-            Push(key.Skip(16).Take(8).ToArray());
-            Push(key.Skip(24).Take(8).ToArray());
 
             //ввод параметра
             Push(param.Take(8).ToArray());
-            Push(param.Skip(8).Take(8).ToArray());
-            Push(param.Skip(16).Take(8).ToArray());
-            Push(param.Skip(24).Take(8).ToArray());
 
             //перемешивание ключа и параметра
             for (int i = 0; i < 32; i++)
@@ -235,15 +229,17 @@ namespace CryptLab4PANAMA
             int[] addedData;
 
             //если последовательность не кратна 32 байтам, то добавляем в конец бит 1 и нули
-            if (data.Length % 32 != 0)
+            if (data.Length % 8 != 0)
             {
-                addedData = new int[data.Length + (32 - data.Length % 32)];
+                addedData = new int[data.Length + (8 - data.Length % 8)];
             }
             else
             {
-                addedData = new int[data.Length + 32];
+                addedData = new int[data.Length + 8];
             }
-            addedData[data.Length] = RotateRight(1, 1);
+            addedData[data.Length] = 1;
+
+            Array.Copy(data, addedData, data.Length);
 
             Reset();
 
@@ -319,11 +315,22 @@ namespace CryptLab4PANAMA
         /// <returns></returns>
         public static int[] ByteArrToIntArr(byte[] data)
         {
-            int[] result = new int[data.Length / 4];
+            byte[] temp;
+            if (data.Length%4 != 0)
+            {
+                temp = new byte[data.Length + (4 - data.Length % 4)];
+                Array.Copy(data, temp, data.Length);
+            }
+            else
+            {
+                temp = data;
+            }
+
+            int[] result = new int[temp.Length / 4];
 
             for (int i = 0; i < result.Length; i++)
             {
-                result[i] = BitConverter.ToInt32(data, i * 4);
+                result[i] = BitConverter.ToInt32(temp, i * 4);
             }
 
             return result;

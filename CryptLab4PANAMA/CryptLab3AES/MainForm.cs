@@ -27,6 +27,12 @@ namespace CryptLab4PANAMA
                 return;
             }
 
+            if (textBox1param.Text.Length < 32)
+            {
+                MessageBox.Show("Param too short");
+                return;
+            }
+
             OpenFileDialog f = new OpenFileDialog();
             f.ShowDialog();
             if (f.FileName == "") return;
@@ -67,7 +73,7 @@ namespace CryptLab4PANAMA
 
             result = Encoding.Convert(Encoding.Default, Encoding.Unicode, result);
 
-            textBox1hash.Text = BitConverter.ToString(result);
+            textBox1hash.Text = Encoding.Unicode.GetString(result);
         }
     }
 }
